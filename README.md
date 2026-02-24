@@ -195,7 +195,7 @@ crypto-world-adviser/
 
 ## 👨‍💻 Author
 
-**Your Name** - [Atharv Ghumtane](https://github.com/yourusername)
+ - [Atharv Ghumtane](https://github.com/yourusername)
 
 ## 🙏 Acknowledgments
 
@@ -204,5 +204,6 @@ crypto-world-adviser/
 - [Gemini ](https://openai.com/) for AI capabilities
 - [Spring Boot](https://spring.io/projects/spring-boot) for backend framework
 - [React](https://reactjs.org/) for frontend framework
+
 
 
