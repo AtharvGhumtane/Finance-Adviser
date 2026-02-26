@@ -1,47 +1,37 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { TrendingUp, User, LogOut, History, LayoutDashboard } from 'lucide-react';
+import { TrendingUp, User, LogOut, History, LayoutDashboard, Calculator, CreditCard } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
   return (
     <nav className="bg-[#0A0E27] border-b border-yellow-500/20 shadow-lg backdrop-blur-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+
           <Link to="/dashboard" className="flex items-center space-x-3 group">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center transform group-hover:scale-110 transition-transform shadow-lg shadow-yellow-500/30">
               <TrendingUp className="w-5 h-5 text-black" />
             </div>
             <div>
               <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
-                Crypto Adviser
+                FinAdvisor
               </span>
-              <div className="text-[10px] text-gray-400 -mt-1">AI-Powered Insights</div>
+              <div className="text-[10px] text-gray-400 -mt-1">AI-Powered Finance</div>
             </div>
           </Link>
 
           {user && (
             <div className="flex items-center space-x-1">
-              {/* Navigation Links */}
-              <NavLink to="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>
-                Dashboard
-              </NavLink>
-              <NavLink to="/history" icon={<History className="w-4 h-4" />}>
-                History
-              </NavLink>
-              <NavLink to="/profile" icon={<User className="w-4 h-4" />}>
-                Profile
-              </NavLink>
+              <NavLink to="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</NavLink>
+              <NavLink to="/history"   icon={<History className="w-4 h-4" />}>Crypto</NavLink>
+              <NavLink to="/tax"       icon={<Calculator className="w-4 h-4" />}>Tax</NavLink>
+              <NavLink to="/credit"    icon={<CreditCard className="w-4 h-4" />}>Credit</NavLink>
+              <NavLink to="/profile"   icon={<User className="w-4 h-4" />}>Profile</NavLink>
 
-              {/* User Info & Logout */}
               <div className="ml-4 pl-4 border-l border-white/10 flex items-center space-x-3">
                 <div className="flex items-center space-x-2 px-3 py-2 bg-white/5 rounded-lg border border-white/10">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">

@@ -8,6 +8,8 @@ import Dashboard from './pages/Dashboard';
 import Recommendations from './pages/Recommendations';
 import History from './pages/History';
 import Profile from './pages/Profile';
+import TaxOptimizer from './pages/TaxOptimizer';
+import CreditCard from './pages/CreditCard';
 import './App.css';
 
 function App() {
@@ -16,47 +18,16 @@ function App() {
       <Router>
         <div className="App">
           <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/recommendations"
-              element={
-                <ProtectedRoute>
-                  <Recommendations />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <History />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            
-            {/* Fallback */}
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/"              element={<Home />} />
+            <Route path="/login"         element={<Login />} />
+            <Route path="/signup"        element={<Signup />} />
+            <Route path="/dashboard"     element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+            <Route path="/history"       element={<ProtectedRoute><History /></ProtectedRoute>} />
+            <Route path="/profile"       element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/tax"           element={<ProtectedRoute><TaxOptimizer /></ProtectedRoute>} />
+            <Route path="/credit"        element={<ProtectedRoute><CreditCard /></ProtectedRoute>} />
+            <Route path="*"              element={<Navigate to="/" replace />} />
           </Routes>
         </div>
       </Router>

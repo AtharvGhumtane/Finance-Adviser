@@ -4,22 +4,16 @@ const API_BASE_URL = 'http://localhost:5051';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 api.interceptors.response.use(
@@ -37,40 +31,39 @@ api.interceptors.response.use(
 export const authAPI = {
   login: (emailOrUsername, password) =>
     api.post('/api/auth/login', { emailOrUsername, password }),
-  
   signup: (email, username, password) =>
     api.post('/api/auth/signup', { email, username, password }),
-  
-  validateToken: () =>
-    api.get('/api/auth/validate'),
+  validateToken: () => api.get('/api/auth/validate'),
 };
 
 export const userAPI = {
-  getProfile: () =>
-    api.get('/api/users/profile'),
-  
-  updateProfile: (data) =>
-    api.put('/api/users/profile', data),
+  getProfile: () => api.get('/api/users/profile'),
+  updateProfile: (data) => api.put('/api/users/profile', data),
 };
 
 export const recommendationAPI = {
-  generate: (profileData) =>
-    api.post('/api/v1/recommendations/generate', profileData),
-  
-  generateAsync: (profileData) =>
-    api.post('/api/v1/recommendations/generate-async', profileData),
-  
-  getHistory: () =>
-    api.get('/api/v1/recommendations/history'),
-  
-  getHistoryByCrypto: (cryptocurrency) =>
-    api.get(`/api/v1/recommendations/history/${cryptocurrency}`),
-  
-  getRecent: (days = 30) =>
-    api.get(`/api/v1/recommendations/recent?days=${days}`),
-  
-  getById: (id) =>
-    api.get(`/api/v1/recommendations/${id}`),
+  generate: (data) => api.post('/api/v1/recommendations/generate', data),
+  generateAsync: (data) => api.post('/api/v1/recommendations/generate-async', data),
+  getHistory: () => api.get('/api/v1/recommendations/history'),
+  getHistoryByCrypto: (c) => api.get(`/api/v1/recommendations/history/${c}`),
+  getRecent: (days = 30) => api.get(`/api/v1/recommendations/recent?days=${days}`),
+  getById: (id) => api.get(`/api/v1/recommendations/${id}`),
+};
+
+// Tax Optimizer Service
+export const taxAPI = {
+  optimize: (data) => api.post('/api/v1/tax/optimize', data),
+  compareRegimes: (data) => api.post('/api/v1/tax/compare-regimes', data),
+  hraExemption: (data) => api.post('/api/v1/tax/hra-exemption', data),
+  getAnalyses: (userId) => api.get(`/api/v1/tax/analyses/${userId}`),
+};
+
+// Credit Card Trap Service
+export const creditAPI = {
+  analyze: (data) => api.post('/api/v1/credit/analyze', data),
+  quickTrapCheck: (data) => api.post('/api/v1/credit/quick-trap-check', data),
+  riskOnly: (data) => api.post('/api/v1/credit/risk-only', data),
+  getAnalyses: (userId) => api.get(`/api/v1/credit/analyses/user/${userId}`),
 };
 
 export default api;

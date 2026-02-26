@@ -1,12 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { recommendationAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import { TrendingUp, Target, AlertTriangle, FileText, Sparkles, ArrowLeft } from 'lucide-react';
 
 const Recommendations = () => {
-  const { user } = useAuth();
   const [formData, setFormData] = useState({
     annualIncome: '',
     riskTolerance: 5,
