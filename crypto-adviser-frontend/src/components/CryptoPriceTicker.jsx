@@ -114,7 +114,7 @@ export const CryptoPriceTicker = () => {
   const tickerItems = [...priceList, ...priceList];
 
   return (
-    <div className="crypto-ticker-container">
+    <div className="crypto-ticker-container sticky top-16 z-40">
       <div className={`connection-indicator ${isConnected ? 'connected' : 'disconnected'}`}>
         <span className="indicator-dot"></span>
         {isConnected ? 'LIVE' : 'OFFLINE'}

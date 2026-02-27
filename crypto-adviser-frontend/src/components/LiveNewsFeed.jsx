@@ -13,7 +13,7 @@ export const LiveNewsFeed = () => {
   const [selectedCrypto, setSelectedCrypto] = useState('ALL');
   const [loading, setLoading] = useState(true);
 
-  const cryptoFilters = ['ALL', 'BTC', 'ETH', 'SOL', 'ADA', 'DOT'];
+  
 
   useEffect(() => {
     fetchHistoricalNews();
@@ -54,19 +54,6 @@ export const LiveNewsFeed = () => {
             <span className="status-dot"></span>
             {isConnected ? 'Live' : 'Connecting...'}
           </div>
-        </div>
-
-        {/* Filter Buttons */}
-        <div className="crypto-filters">
-          {cryptoFilters.map(crypto => (
-            <button
-              key={crypto}
-              className={`filter-btn ${selectedCrypto === crypto ? 'active' : ''}`}
-              onClick={() => setSelectedCrypto(crypto)}
-            >
-              {crypto}
-            </button>
-          ))}
         </div>
       </div>
 

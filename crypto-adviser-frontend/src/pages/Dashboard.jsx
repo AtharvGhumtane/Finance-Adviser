@@ -3,8 +3,71 @@ import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import { LiveNewsFeed } from '../components/LiveNewsFeed';
 import { CryptoPriceTicker } from '../components/CryptoPriceTicker';
-import { Sparkles, TrendingUp, ArrowRight, Brain, Shield, Zap } from 'lucide-react';
+import {
+  Sparkles, TrendingUp, ArrowRight,
+  Calculator, CreditCard, Brain
+} from 'lucide-react';
 
+// ─── Service Card ─────────────────────────────────────────────────────────────
+const ServiceCard = ({ to, icon, title, description, badge, accent = 'yellow' }) => {
+  const accents = {
+    yellow: {
+      icon: 'from-yellow-400 to-yellow-600',
+      shadow: 'shadow-yellow-500/20',
+      border: 'hover:border-yellow-500/40',
+      badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+      arrow: 'text-yellow-400',
+      glow: 'group-hover:shadow-yellow-500/10',
+    },
+    blue: {
+      icon: 'from-blue-400 to-blue-600',
+      shadow: 'shadow-blue-500/20',
+      border: 'hover:border-blue-500/40',
+      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      arrow: 'text-blue-400',
+      glow: 'group-hover:shadow-blue-500/10',
+    },
+    emerald: {
+      icon: 'from-emerald-400 to-emerald-600',
+      shadow: 'shadow-emerald-500/20',
+      border: 'hover:border-emerald-500/40',
+      badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      arrow: 'text-emerald-400',
+      glow: 'group-hover:shadow-emerald-500/10',
+    },
+  };
+  const a = accents[accent];
+
+  return (
+    <Link
+      to={to}
+      className={`group flex items-center gap-5 bg-[#141824] rounded-2xl border border-white/8 p-5 transition-all duration-300 ${a.border} hover:shadow-xl ${a.glow} hover:-translate-y-0.5`}
+    >
+      {/* Icon */}
+      <div className={`w-14 h-14 flex-shrink-0 rounded-xl bg-gradient-to-br ${a.icon} flex items-center justify-center shadow-lg ${a.shadow} group-hover:scale-105 transition-transform duration-300`}>
+        {icon}
+      </div>
+
+      {/* Text */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-white font-bold text-base">{title}</h3>
+          {badge && (
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${a.badge}`}>
+              {badge}
+            </span>
+          )}
+        </div>
+        <p className="text-gray-500 text-xs leading-relaxed truncate">{description}</p>
+      </div>
+
+      {/* Arrow */}
+      <ArrowRight className={`w-5 h-5 flex-shrink-0 ${a.arrow} opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300`} />
+    </Link>
+  );
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 const Dashboard = () => {
   const { user } = useAuth();
 
@@ -14,90 +77,100 @@ const Dashboard = () => {
       <CryptoPriceTicker />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Welcome back, <span className="text-yellow-400">{user?.username}</span>! 👋
+
+        {/* ── Welcome Header ──────────────────────────────────────────────── */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-white">
+            Welcome back,{' '}
+            <span className="bg-gradient-to-r from-yellow-400 to-yellow-200 bg-clip-text text-transparent">
+              {user?.username}
+            </span>{' '}
+            👋
           </h1>
-          <p className="text-gray-400 text-lg">
-            Stay updated with live crypto news and get AI-powered investment recommendations
+          <p className="text-gray-500 mt-1 text-sm">
+            Live crypto news, AI-powered tax optimization, and smart financial tools — all in one place.
           </p>
         </div>
 
-        {/* Main Content - Two Columns */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT: Live News Feed (2/3 width) */}
+        {/* ── Main 2-column layout ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          {/* LEFT — News Feed (2/3 width) */}
           <div className="lg:col-span-2">
             <LiveNewsFeed />
           </div>
 
-          {/* RIGHT: AI Recommendation Card (1/3 width) */}
-          <div className="lg:col-span-1">
-            <div className="bg-[#141824] rounded-2xl border border-white/10 p-8 shadow-2xl sticky top-24">
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-yellow-500/30 animate-pulse">
-                  <Brain className="w-10 h-10 text-black" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  AI Investment Adviser
-                </h2>
-                <p className="text-gray-400 text-sm">
-                  Get personalized crypto recommendations powered by advanced AI
-                </p>
-              </div>
+          {/* RIGHT — Services (1/3 width) */}
+          {/* RIGHT — Services (1/3 width) */}
+          <div className="flex flex-col gap-4 sticky top-24 self-start">
 
-              {/* Features List */}
-              <div className="space-y-4 mb-6">
-                <FeatureItem icon={<Sparkles className="w-5 h-5" />} text="Personalized Analysis" />
-                <FeatureItem icon={<TrendingUp className="w-5 h-5" />} text="Market Insights" />
-                <FeatureItem icon={<Shield className="w-5 h-5" />} text="Risk Assessment" />
-                <FeatureItem icon={<Zap className="w-5 h-5" />} text="Instant Results" />
-              </div>
-
-              {/* CTA Button */}
-              <Link
-                to="/recommendations"
-                className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black py-4 rounded-lg font-bold text-lg hover:from-yellow-500 hover:to-yellow-700 transition-all shadow-lg shadow-yellow-500/30 transform hover:scale-[1.02] flex items-center justify-center gap-2 group"
-              >
-                <Sparkles className="w-5 h-5" />
-                Get Recommendation
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition" />
-              </Link>
-
-              {/* Stats */}
-              <div className="mt-6 pt-6 border-t border-white/10 grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400">95%</div>
-                  <div className="text-xs text-gray-500">Accuracy</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-400">10K+</div>
-                  <div className="text-xs text-gray-500">Users</div>
-                </div>
-              </div>
-
-              {/* View History Link */}
-              <Link
-                to="/history"
-                className="block text-center mt-4 text-yellow-400 text-sm font-semibold hover:text-yellow-300 transition"
-              >
-                View Past Recommendations →
-              </Link>
+            {/* Section Label */}
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-yellow-400" />
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">AI Services</span>
             </div>
+
+            {/* Card 1 — Crypto Recommendation */}
+            <ServiceCard
+              to="/recommendations"
+              icon={<Brain className="w-7 h-7 text-black" />}
+              title="Crypto Adviser"
+              description="Personalized AI investment recommendations based on your risk profile"
+              badge="AI"
+              accent="yellow"
+            />
+
+            {/* Card 2 — Tax Optimizer */}
+            <ServiceCard
+              to="/tax"
+              icon={<Calculator className="w-7 h-7 text-black" />}
+              title="Tax Optimizer"
+              description="Compare Old vs New regime, HRA exemptions & AI tax-saving tips"
+              badge="FY 2024-25"
+              accent="blue"
+            />
+
+            {/* Card 3 — Credit Card */}
+            <ServiceCard
+              to="/credit"
+              icon={<CreditCard className="w-7 h-7 text-black" />}
+              title="Credit Card Analyser"
+              description="Detect hidden debt traps, ML risk scoring & CIBIL impact analysis"
+              badge="6 Traps"
+              accent="emerald"
+            />
+
+            {/* History quick link */}
+            <Link
+              to="/history"
+              className="flex items-center justify-between px-5 py-3.5 bg-white/3 hover:bg-white/6 border border-white/8 hover:border-white/15 rounded-xl transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-400 font-medium">Past Recommendations</span>
+              </div>
+              <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 group-hover:translate-x-1 transition-all" />
+            </Link>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-3 gap-3 mt-1">
+              {[
+                { label: 'Accuracy', value: '95%' },
+                { label: 'Users',    value: '10K+' },
+                { label: 'Uptime',   value: '24/7' },
+              ].map(s => (
+                <div key={s.label} className="bg-[#141824] border border-white/8 rounded-xl p-3 text-center">
+                  <div className="text-lg font-bold text-yellow-400">{s.value}</div>
+                  <div className="text-[10px] text-gray-600 mt-0.5">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-const FeatureItem = ({ icon, text }) => (
-  <div className="flex items-center gap-3 text-gray-300">
-    <div className="w-10 h-10 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-400">
-      {icon}
-    </div>
-    <span className="font-medium">{text}</span>
-  </div>
-);
 
 export default Dashboard;
