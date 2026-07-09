@@ -186,6 +186,36 @@ docker compose down -v
 
 ---
 
+### ⚡ One-Command Local Start (Without Docker)
+
+If you want to run everything locally without Docker, use the included PowerShell scripts.
+
+> **Prerequisites:** Java 21+, Maven, Node.js 18+, PostgreSQL running on port `2526`, RabbitMQ on `5672`, Kafka on `9092`.
+
+```powershell
+# Start ALL services in one command (opens each in its own terminal window)
+.\start-all.ps1
+
+# Start backend only (skip frontend)
+.\start-all.ps1 -SkipFrontend
+
+# Stop ALL services
+.\stop-all.ps1
+```
+
+**What the script does:**
+1. 🟣 Launches **Eureka** first and waits for it to be healthy
+2. 🔵 Launches all **6 backend services** in parallel (each in its own window)
+3. 🟡 Launches **API Gateway** after a short delay
+4. 🟢 Launches the **React frontend**
+
+> If you get a script execution error, run this first:
+> ```powershell
+> Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
+---
+
 ### 🛠️ Manual Setup (Without Docker)
 
 **Prerequisites:**
