@@ -1,0 +1,312 @@
+###############################################################
+# Crypto World Adviser — Docker Compose
+# Start everything: docker compose up --build
+# Stop everything:  docker compose down
+# Stop + wipe DBs:  docker compose down -v
+###############################################################
+
+services:
+
+  # ─────────────────────────────────────────────────────────
+  # INFRASTRUCTURE
+  # ─────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: cwa-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      # The default DB postgres itself is created automatically
+    ports:
+      - "2526:5432"           # Host port 2526 matches your local dev setup
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cwa-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: cwa-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"           # AMQP
+      - "15672:15672"         # Management UI: http://localhost:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - cwa-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.1
+    container_name: cwa-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper_data:/var/lib/zookeeper/data
+    networks:
+      - cwa-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: cwa-kafka
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server kafka:29092"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    networks:
+      - cwa-network
+
+  # ─────────────────────────────────────────────────────────
+  # SERVICE DISCOVERY
+  # ─────────────────────────────────────────────────────────
+
+  eureka:
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    container_name: cwa-eureka
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - cwa-network
+
+  # ─────────────────────────────────────────────────────────
+  # BACKEND SERVICES
+  # ─────────────────────────────────────────────────────────
+
+  api-gateway:
+    build:
+      context: ./api-gatewayAlexz
+      dockerfile: Dockerfile
+    container_name: cwa-api-gateway
+    ports:
+      - "5051:5051"
+    environment:
+      # Override Eureka URL to use Docker service name
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      JWT_SECRET: ${JWT_SECRET:-e34bdaaa694f33b3beb35ab79bb2f69061688ee1e94400c9605889e72cffe94}
+    depends_on:
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  auth-service:
+    build:
+      context: ./auth-serviceAlex
+      dockerfile: Dockerfile
+    container_name: cwa-auth-service
+    ports:
+      - "5054:5054"
+    environment:
+      # Override DB URL: localhost:2526 → postgres:5432 (Docker service name)
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/AlexzAuth
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      JWT_SECRET: ${JWT_SECRET:-e34bdaaa694f33b3beb35ab79bb2f69061688ee1e94400c9605889e72cffe94}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  user-service:
+    build:
+      context: ./user-serviceAlex
+      dockerfile: Dockerfile
+    container_name: cwa-user-service
+    ports:
+      - "5053:5053"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/Alexz
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  ai-service:
+    build:
+      context: ./ai-serviceAlex
+      dockerfile: Dockerfile
+    container_name: cwa-ai-service
+    ports:
+      - "5055:5055"
+    environment:
+      # R2DBC URL: uses Docker service name and standard port 5432
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/AlexzAiRecomm
+      SPRING_R2DBC_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_R2DBC_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  crypto-news:
+    build:
+      context: ./cryptonewsAlexz
+      dockerfile: Dockerfile
+    container_name: cwa-crypto-news
+    ports:
+      - "5056:5056"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/crypto_news_db
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  tax-optimizer:
+    build:
+      context: ./tax-optimizerAlexz
+      dockerfile: Dockerfile
+    container_name: cwa-tax-optimizer
+    ports:
+      - "5057:5057"
+    environment:
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/tax_Alexz
+      SPRING_R2DBC_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_R2DBC_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      SPRING_R2DBC_HOST: postgres
+      SPRING_R2DBC_PORT: "5432"
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  credit-card:
+    build:
+      context: ./credit-card-service
+      dockerfile: Dockerfile
+    container_name: cwa-credit-card
+    ports:
+      - "5058:5058"
+    environment:
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/credit_card_db
+      SPRING_R2DBC_USERNAME: ${POSTGRES_USER:-postgres}
+      SPRING_R2DBC_PASSWORD: ${POSTGRES_PASSWORD:-2526}
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka:
+        condition: service_healthy
+    networks:
+      - cwa-network
+
+  # ─────────────────────────────────────────────────────────
+  # FRONTEND
+  # ─────────────────────────────────────────────────────────
+
+  frontend:
+    build:
+      context: ./crypto-adviser-frontend
+      dockerfile: Dockerfile
+    container_name: cwa-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      # Vite env var pointing to the API gateway inside Docker
+      VITE_API_BASE_URL: http://localhost:5051
+    depends_on:
+      - api-gateway
+    networks:
+      - cwa-network
+
+# ─────────────────────────────────────────────────────────
+# VOLUMES & NETWORKS
+# ─────────────────────────────────────────────────────────
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  zookeeper_data:
+  kafka_data:
+
+networks:
+  cwa-network:
+    driver: bridge

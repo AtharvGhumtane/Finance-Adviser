@@ -153,18 +153,7 @@ const Dashboard = () => {
             </Link>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-3 gap-3 mt-1">
-              {[
-                { label: 'Accuracy', value: '95%' },
-                { label: 'Users',    value: '10K+' },
-                { label: 'Uptime',   value: '24/7' },
-              ].map(s => (
-                <div key={s.label} className="bg-[#141824] border border-white/8 rounded-xl p-3 text-center">
-                  <div className="text-lg font-bold text-yellow-400">{s.value}</div>
-                  <div className="text-[10px] text-gray-600 mt-0.5">{s.label}</div>
-                </div>
-              ))}
-            </div>
+            
 
           </div>
         </div>

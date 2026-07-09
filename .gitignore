@@ -1,0 +1,28 @@
+# ============================================================
+# Root .gitignore — Crypto World Adviser
+# ============================================================
+
+# Never commit secrets!
+.env
+
+# Maven build artifacts
+**/target/
+**/*.class
+
+# IDE files
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+**/node_modules/
+**/dist/
+
+# Logs
+**/*.log
