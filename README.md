@@ -292,7 +292,7 @@ Copy `.env.example` to `.env` and fill in your values:
 ```env
 # PostgreSQL
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=2526
+POSTGRES_PASSWORD=1234
 
 # JWT Secret (shared between auth-service and api-gateway)
 JWT_SECRET=your_jwt_secret_here
