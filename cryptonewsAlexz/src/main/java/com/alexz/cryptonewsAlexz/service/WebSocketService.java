@@ -1,6 +1,7 @@
 package com.alexz.cryptonewsAlexz.service;
 
 import com.alexz.cryptonewsAlexz.dto.NewsDTO;
+import com.alexz.cryptonewsAlexz.dto.CryptoPriceDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,18 @@ public class WebSocketService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ObjectMapper objectMapper;
+
+    /**
+     * Broadcast price update to all WebSocket subscribers
+     */
+    public void broadcastPrice(CryptoPriceDTO price) {
+        try {
+            log.trace("Broadcasting price update via WebSocket: {}", price.getSymbol());
+            messagingTemplate.convertAndSend("/topic/crypto-prices", price);
+        } catch (Exception e) {
+            log.error("Error broadcasting price via WebSocket", e);
+        }
+    }
 
     /**
      * Broadcast news to all WebSocket subscribers

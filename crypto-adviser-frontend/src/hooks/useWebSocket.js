@@ -25,15 +25,23 @@ export const useWebSocket = (url, topic) => {
       // Subscribe to topic
       stompClient.subscribe(topic, (message) => {
         try {
-          const newsItem = JSON.parse(message.body);
-          console.log('📰 New news received:', newsItem.title);
+          const parsedItem = JSON.parse(message.body);
+          const isPrice = topic.includes('prices');
+          
+          if (isPrice) {
+            console.log('📈 New price update received:', parsedItem.symbol, parsedItem.price);
+          } else {
+            console.log('📰 New news received:', parsedItem.title);
+          }
           
           setMessages((prev) => {
-            // Prevent duplicates
-            if (prev.some(item => item.newsId === newsItem.newsId)) {
-              return prev;
+            const uniqueKey = isPrice ? 'symbol' : 'newsId';
+            if (!parsedItem[uniqueKey]) {
+              return [parsedItem, ...prev].slice(0, 50);
             }
-            return [newsItem, ...prev].slice(0, 50); // Keep last 50 items
+            // Filter out old update for the same key to keep it fresh
+            const filtered = prev.filter(item => item[uniqueKey] !== parsedItem[uniqueKey]);
+            return [parsedItem, ...filtered].slice(0, 50);
           });
         } catch (error) {
           console.error('Error parsing message:', error);

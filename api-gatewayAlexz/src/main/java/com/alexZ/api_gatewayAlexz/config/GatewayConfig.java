@@ -5,6 +5,9 @@ import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 @Configuration
 public class GatewayConfig {
@@ -16,24 +19,30 @@ public class GatewayConfig {
     }
 
     @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedMethod("*");
+        config.addAllowedHeader("*");
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return new CorsWebFilter(source);
+    }
+
+    @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
                 // ===== PUBLIC ROUTES (No JWT Required) =====
 
-                // Auth Service - Signup
-                .route("auth-signup", r -> r
-                        .path("/api/auth/signup")
-                        .uri("lb://AUTH-SERVICE"))
-
-                // Auth Service - Login
-                .route("auth-login", r -> r
-                        .path("/api/auth/login")
-                        .uri("lb://AUTH-SERVICE"))
-
-                // Auth Service - Health Check
-                .route("auth-health", r -> r
-                        .path("/api/auth/health")
+                // Auth Service - All auth endpoints are public
+                .route("auth-service", r -> r
+                        .path("/api/auth/**")
                         .uri("lb://AUTH-SERVICE"))
 
 
@@ -47,9 +56,21 @@ public class GatewayConfig {
 
                 // AI Service - All endpoints require authentication
                 .route("ai-service", r -> r
-                        .path("/api/ai/**")
+                        .path("/api/v1/recommendations/**")
                         .filters(f -> f.filter(authFilter.apply(new AuthenticationFilter.Config())))
-                        .uri("lb://AI-SERVICE"))
+                        .uri("lb://AI-RECOMMENDATION-SERVICE"))
+
+                // Tax Optimizer - All endpoints require authentication
+                .route("tax-optimizer", r -> r
+                        .path("/api/v1/tax/**")
+                        .filters(f -> f.filter(authFilter.apply(new AuthenticationFilter.Config())))
+                        .uri("lb://TAX-OPTIMIZER-SERVICE"))
+
+                // Credit Card Service - All endpoints require authentication
+                .route("credit-card-service", r -> r
+                        .path("/api/v1/credit/**")
+                        .filters(f -> f.filter(authFilter.apply(new AuthenticationFilter.Config())))
+                        .uri("lb://CREDIT-CARD-SERVICE"))
 
                 .build();
     }

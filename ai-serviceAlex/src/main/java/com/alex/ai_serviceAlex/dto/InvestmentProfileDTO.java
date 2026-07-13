@@ -15,7 +15,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class InvestmentProfileDTO {
 
-    @NotNull(message = "User ID is required")
     private UUID userId;
 
     @NotNull(message = "Annual income is required")
